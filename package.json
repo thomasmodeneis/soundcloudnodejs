@@ -1,0 +1,19 @@
+{
+    "description": "The missing NodeJS Wrapper for SoundCloud API",
+    "version": "1.0.0",
+    "homepage": "https://github.com/thomasmodeneis/soundcloudnodejs",
+    "author": "Thomas Modeneis <thomas.modeneis@gmail.com>",
+    "main": "soundcloudnodejs",
+    "name": "soundcloudnodejs",
+    "private": false,
+    "engines": {
+        "node": "0.10.x",
+        "npm": "*"
+    },
+    "dependencies": {
+        "curlrequest": "0.5.0",
+        "request": "2.40.0",
+        "form-data": "0.1.4",
+        "underscore": "1.7.0"
+    }
+}
