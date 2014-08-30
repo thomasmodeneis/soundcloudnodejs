@@ -4,6 +4,7 @@
 'use strict';
 var soundcloudnodejs = require('../soundcloudnodejs');
 var fs = require('fs');
+var _ = require('underscore');
 
 var config = require('../config');
 
@@ -18,23 +19,28 @@ var options = {
 
 soundcloudnodejs.getToken(options, function (err, token, meta) {
 
-    var track = {
-        title: 'dog_example',
-        description: 'dog_example',
-        genre: 'dog_example',
-        artwork_data: '/opt/poc/soundcloudnodejs/example/dog/dog.jpeg',
-        sharing: 'public',
-        oauth_token: token.access_token,
-        asset_data: '/opt/poc/soundcloudnodejs/example/dog/dog_example.mp3'
-    }
+    if (err || token.access_token === undefined) {
+        console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
+    } else {
 
-    soundcloudnodejs.addTrack(track, function (err, track) {
-        if(err){
-            console.log(err);
-        }else {
-            console.log(track);
+        var track = {
+            title: 'dog_example',
+            description: 'dog_example',
+            genre: 'dog_example',
+            artwork_data: __dirname + '/dog/dog.jpeg',
+            sharing: 'public',
+            oauth_token: token.access_token,
+            asset_data: __dirname + '/dog/dog_example.mp3'
         }
 
-    });
+        soundcloudnodejs.addTrack(track, function (err, track) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(track);
+            }
+
+        });
+    }
 
 })

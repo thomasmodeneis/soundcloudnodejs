@@ -16,6 +16,12 @@ var options = {
 
 soundcloudnodejs.getToken(options, function (err, token, meta) {
 //    console.log(meta);
-    config.access_token = token.access_token;
-    console.log(config.access_token)
+
+    if (err || token.access_token === undefined) {
+        console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
+    } else {
+        //set to config so is now global
+        config.access_token = token.access_token;
+        console.log(config.access_token)
+    }
 });

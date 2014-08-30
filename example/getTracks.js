@@ -18,16 +18,20 @@ var options = {
 
 soundcloudnodejs.getToken(options, function (err, token, meta) {
 
-    var playlist = {
-        oauth_token: token.access_token
-    };
+    if (err || token.access_token === undefined) {
+        console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
+    } else {
+        var playlist = {
+            oauth_token: token.access_token
+        };
 
-    soundcloudnodejs.getTracks(playlist, function (err, playlist) {
-        if(err){
-            console.log(err);
-        }else {
-            console.log(playlist);
-        }
-    });
+        soundcloudnodejs.getTracks(playlist, function (err, playlist) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(playlist);
+            }
+        });
+    }
 
 })

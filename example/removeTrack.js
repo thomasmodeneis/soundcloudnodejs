@@ -18,18 +18,34 @@ var options = {
 
 soundcloudnodejs.getToken(options, function (err, token, meta) {
 
-    var track = {
-        id: '165450557',
-        oauth_token: token.access_token
-    }
 
-    soundcloudnodejs.removeTrack(track, function (err, track) {
-        if(err){
-            console.log(err);
-        }else {
-            console.log(track);
+    if (err || token.access_token === undefined) {
+        console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
+    } else {
+        var track = {
+            title: 'dog_example',
+            description: 'dog_example',
+            genre: 'dog_example',
+            artwork_data: __dirname + '/dog/dog.jpeg',
+            sharing: 'public',
+            oauth_token: token.access_token,
+            asset_data: __dirname + '/dog/dog_example.mp3'
         }
 
-    });
+        soundcloudnodejs.addTrack(track, function (err, track) {
+
+            track.oauth_token = token.access_token;
+
+            soundcloudnodejs.removeTrack(track, function (err, response) {
+                if (err) {
+                    console.log('removeTrack err: ' + err);
+                } else {
+                    console.log('removeTrack done: ' + JSON.stringify(response));
+                }
+
+            });
+
+        });
+    }
 
 })

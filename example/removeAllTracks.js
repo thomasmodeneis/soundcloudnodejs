@@ -18,30 +18,34 @@ var options = {
 
 soundcloudnodejs.getToken(options, function (err, token, meta) {
 
-    var options = {
-        oauth_token: token.access_token
-    };
+    if (err || token.access_token === undefined) {
+        console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
+    } else {
+        var options = {
+            oauth_token: token.access_token
+        };
 
-    soundcloudnodejs.getTracks(options, function (err, tracks) {
-        if(err){
-            console.log(err);
-        }else {
-            console.log(tracks);
+        soundcloudnodejs.getTracks(options, function (err, tracks) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(tracks);
 
-            removeAll(tracks,token,0, function(msg){
-                console.log(msg);
-            });
+                removeAll(tracks, token, 0, function (msg) {
+                    console.log(msg);
+                });
 
-        }
-    });
+            }
+        });
+    }
 
 });
 
 
-function removeAll(tracks, token, count, callback){
+function removeAll(tracks, token, count, callback) {
     var track = tracks[count];
 
-    if(track === undefined){
+    if (track === undefined) {
         callback('done');
         return;
     }
@@ -52,12 +56,12 @@ function removeAll(tracks, token, count, callback){
     }
 
     soundcloudnodejs.removeTrack(options, function (err, track) {
-        if(err){
+        if (err) {
             console.log(err);
-        }else {
+        } else {
             console.log(track);
             count = count + 1;
-            removeAll(tracks,token,count,callback)
+            removeAll(tracks, token, count, callback)
         }
 
     });
