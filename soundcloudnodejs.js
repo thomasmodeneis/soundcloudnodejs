@@ -14,10 +14,22 @@ exports.addTrack = function (options, callback) {
     form.append('track[title]', options.title);
     form.append('track[description]', options.description);
     form.append('track[genre]', options.genre);
-    form.append('track[artwork_data]', fs.createReadStream(options.artwork_data));
+
+    var exist_artwork_data = fs.existsSync(options.artwork_data)
+    if(exist_artwork_data){
+        form.append('track[artwork_data]', fs.createReadStream(options.artwork_data));
+    }
+
     form.append('track[sharing]', options.sharing);
     form.append('oauth_token', options.oauth_token);
-    form.append('track[asset_data]', fs.createReadStream(options.asset_data));
+
+    var exist_asset_data = fs.existsSync(options.asset_data);
+    if(exist_asset_data){
+        form.append('track[asset_data]', fs.createReadStream(options.asset_data));
+    }else {
+        callback('Error while uploading track fs.existsSync(options.asset_data): '+exist_asset_data);
+        return;
+    }
 
     form.submit('https://api.soundcloud.com/tracks', function (err, response) {
         if (!err) {

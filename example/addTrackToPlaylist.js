@@ -33,28 +33,33 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
 
         soundcloudnodejs.addTrack(track, function (err, track) {
 
-            var playlist = {
-                oauth_token: token.access_token,
-                title: 'test_' + Math.floor((Math.random() * 10) + 1),
-                sharing: 'public',
-                tracks: { id: track.id }
-            };
+            if(err){
+                console.log(err);
+            }else {
 
-            /**
-             * If playlist does not exist will create new one
-             */
-            soundcloudnodejs.addTrackToPlaylist(playlist, function (err, track) {
+                var playlist = {
+                    oauth_token: token.access_token,
+                    title: 'test_' + Math.floor((Math.random() * 10) + 1),
+                    sharing: 'public',
+                    tracks: { id: track.id }
+                };
+
+                /**
+                 * If playlist does not exist will create new one
+                 */
+                soundcloudnodejs.addTrackToPlaylist(playlist, function (err, track) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log(track);
+                    }
+
+                });
                 if (err) {
                     console.log(err);
                 } else {
                     console.log(track);
                 }
-
-            });
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(track);
             }
 
         });
