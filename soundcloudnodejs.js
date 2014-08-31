@@ -14,19 +14,19 @@ exports.addTrack = function (options, callback) {
 
     form.append('format', 'json');
     if (options.title === undefined) {
-        callback('Error while uploading track options.title: ' + options.title);
+        callback('Error while addTrack track options.title: ' + options.title);
         return;
     } else {
         form.append('track[title]', options.title);
     }
     if (options.description === undefined) {
-        callback('Error options.description is required and is: ' + options.description);
+        callback('Error  while addTrack track options.description is required and is: ' + options.description);
         return;
     } else {
         form.append('track[description]', options.description);
     }
     if (options.genre === undefined) {
-        callback('Error options.genre is required and is:  ' + options.genre);
+        callback('Error  while addTrack track options.genre is required and is:  ' + options.genre);
         return;
     } else {
         form.append('track[genre]', options.genre);
@@ -41,7 +41,7 @@ exports.addTrack = function (options, callback) {
     form.append('track[sharing]', options.sharing);
 
     if (options.oauth_token === undefined) {
-        callback('Error oauth_token is required and is: ' + options.oauth_token);
+        callback('Error  while addTrack track oauth_token is required and is: ' + options.oauth_token);
         return;
     } else {
         form.append('oauth_token', options.oauth_token);
@@ -49,7 +49,7 @@ exports.addTrack = function (options, callback) {
 
 
     if (options.asset_data === undefined) {
-        callback('Error options.asset_data is required and is: ' + options.asset_data);
+        callback('Error  while addTrack track options.asset_data is required and is: ' + options.asset_data);
         return;
     } else {
 
@@ -59,7 +59,7 @@ exports.addTrack = function (options, callback) {
         if (exist_asset_data) {
             form.append('track[asset_data]', fs.createReadStream(options.asset_data));
         } else {
-            callback('Error could not find options.asset_data --> fs.createReadStream(options.asset_data): ' + exist_asset_data);
+            callback('Error addTrack could not find options.asset_data --> fs.createReadStream(options.asset_data): ' + exist_asset_data);
             return;
         }
     }
@@ -68,7 +68,7 @@ exports.addTrack = function (options, callback) {
         if (!err) {
 
             response.on('error', function (err) {
-                callback('Error while uploading track: ' + err);
+                callback('Error addTrack while addTrack track: ' + err);
             });
 
             var data = "";
@@ -77,13 +77,13 @@ exports.addTrack = function (options, callback) {
             });
 
             response.on('end', function () {
-                console.log('upload successful');
+                console.log('addTrack successful');
                 callback(null, JSON.parse(data.toString('utf8')));
             });
 
         } else {
-            console.log('Error while uploading track: ' + err);
-            callback('Error while uploading track: ' + err);
+            console.log('Error while addTrack track : ' + err);
+            callback('Error while addTrack track : ' + err);
 
         }
     });
@@ -91,15 +91,15 @@ exports.addTrack = function (options, callback) {
 
 exports.removeTrack = function (options, callback) {
     if (options.oauth_token === undefined) {
-        callback('Error oauth_token is required and is: ' + options.oauth_token);
+        callback('Error removeTrack oauth_token is required and is: ' + options.oauth_token);
         return;
     } else {
 
         var uri = 'https://api.soundcloud.com/tracks/' + options.id + '?oauth_token=' + options.oauth_token + '&format=json';
         request(uri, {method: 'DELETE'}, function (err, response) {
             if (err || response.body !== undefined && response.body.indexOf(404) !== -1) {
-                console.log('Error while deleting track: ' + response.body);
-                callback('Error while uploading track: ' + response.body);
+                console.log('Error while removeTrack track: ' + response.body);
+                callback('Error while removeTrack track: ' + response.body);
             } else {
                 callback(null, {result: response.body});
             }
@@ -109,7 +109,7 @@ exports.removeTrack = function (options, callback) {
 
 exports.getTracks = function (options, callback) {
     if (options.oauth_token === undefined) {
-        callback('Error oauth_token is required and is: ' + options.oauth_token);
+        callback('Error getTracks oauth_token is required and is: ' + options.oauth_token);
         return;
     } else {
         var uri = 'https://api.soundcloud.com/me/tracks?format=json&oauth_token=' + options.oauth_token;
@@ -135,11 +135,11 @@ exports.addTrackToPlaylist = function (options, callback) {
     form.append('format', 'json');
 
 
-    console.log(JSON.stringify(options));
+    console.log(JSON.stringify(options.tracks));
 
 
     if (options.tracks === undefined) {
-        callback('Error while uploading options.tracks : ' + options.tracks);
+        callback('Error while addTrackToPlaylist options.tracks : ' + options.tracks);
         return;
     } else {
         _.each(trackIds(options.tracks), function (id) {
@@ -148,29 +148,29 @@ exports.addTrackToPlaylist = function (options, callback) {
         });
     }
 
-    if (options.id === undefined) {
-        callback('Error while uploading options.id : ' + options.id);
+    if (options.track.id === undefined) {
+        callback('Error while addTrackToPlaylist options.id : ' + options.track.id);
         return;
     } else {
-        form.append('playlist[tracks][][id]', options.id);
+        form.append('playlist[tracks][][id]', options.track.id);
     }
 
     if (options.title === undefined) {
-        callback('Error while uploading track : ' + options.title);
+        callback('Error while addTrackToPlaylist track : ' + options.title);
         return;
     } else {
         form.append('playlist[title]', options.title);
     }
 
     if (options.sharing === undefined) {
-        callback('Error while uploading track : ' + options.sharing);
+        callback('Error while addTrackToPlaylist track : ' + options.sharing);
         return;
     } else {
         form.append('playlist[sharing]', options.sharing);
     }
 
     if (options.oauth_token === undefined) {
-        callback('Error while uploading track : ' + options.oauth_token);
+        callback('Error while addTrackToPlaylist track : ' + options.oauth_token);
         return;
     } else {
         form.append('oauth_token', options.oauth_token);
@@ -181,7 +181,7 @@ exports.addTrackToPlaylist = function (options, callback) {
         if (!err) {
 
             response.on('error', function (err) {
-                callback('Error while uploading track: ' + err);
+                callback('Error while addTrackToPlaylist track: ' + err);
             });
 
             var data = "";
@@ -195,8 +195,8 @@ exports.addTrackToPlaylist = function (options, callback) {
             });
 
         } else {
-            console.log('Error while uploading track: ' + err);
-            callback('Error while uploading track: ' + err);
+            console.log('Error while addTrackToPlaylist track: ' + err);
+            callback('Error while addTrackToPlaylist track: ' + err);
 
         }
     });
@@ -214,7 +214,7 @@ function parsedUrl(playlist) {
 }
 
 function trackIds(json) {
-    return _.map(json.tracks, function(track) {
+    return _.map(json, function(track) {
         return track.id;
     })
 }
@@ -225,7 +225,7 @@ exports.addTrackToNewPlaylist = function (options, callback) {
     form.append('format', 'json');
 
     if (options.tracks === undefined) {
-        callback('Error while uploading options.tracks : ' + options.tracks);
+        callback('Error while addTrackToNewPlaylist options.tracks : ' + options.tracks);
         return;
     } else {
         _.each(options.tracks, function (id) {
@@ -233,19 +233,19 @@ exports.addTrackToNewPlaylist = function (options, callback) {
         });
     }
     if (options.title === undefined) {
-        callback('Error while uploading options.title : ' + options.title);
+        callback('Error while addTrackToNewPlaylist options.title : ' + options.title);
         return;
     } else {
         form.append('playlist[title]', options.title);
     }
     if (options.sharing === undefined) {
-        callback('Error while uploading options.sharing : ' + options.sharing);
+        callback('Error while addTrackToNewPlaylist options.sharing : ' + options.sharing);
         return;
     } else {
         form.append('playlist[sharing]', options.sharing);
     }
     if (options.oauth_token === undefined) {
-        callback('Error while uploading options.oauth_token : ' + options.oauth_token);
+        callback('Error while addTrackToNewPlaylist options.oauth_token : ' + options.oauth_token);
         return;
     } else {
         form.append('oauth_token', options.oauth_token);
@@ -255,7 +255,7 @@ exports.addTrackToNewPlaylist = function (options, callback) {
         if (!err) {
 
             response.on('error', function (err) {
-                callback('Error while uploading track: ' + err);
+                callback('Error while addTrackToNewPlaylist track: ' + err);
             });
 
             var data = "";
@@ -269,8 +269,8 @@ exports.addTrackToNewPlaylist = function (options, callback) {
             });
 
         } else {
-            console.log('Error while uploading track: ' + err);
-            callback('Error while uploading track: ' + err);
+            console.log('Error while addTrackToNewPlaylist track: ' + err);
+            callback('Error while addTrackToNewPlaylist track: ' + err);
 
         }
     });
@@ -301,23 +301,23 @@ exports.getPlaylist = function (options, callback) {
 
 exports.getPlaylistById = function (options, callback) {
     if (options.oauth_token === undefined) {
-        callback('Error options.oauth_token is required and is: ' + options.oauth_token);
+        callback('Error getPlaylistById options.oauth_token is required and is: ' + options.oauth_token);
         return;
     } else if ( options.id === undefined) {
-        callback('Error  options.id is required and is: ' +  options.id);
+        callback('Error getPlaylistById options.id is required and is: ' +  options.id);
         return;
     }else {
         var uri = 'https://api.soundcloud.com/me/playlists/' + options.id + '?format=json&oauth_token=' + options.oauth_token;
         request(uri, function (err, response, body) {
             if (!err) {
-                console.log('getPlaylist successful');
+                console.log('getPlaylistById successful');
                 var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
                     return track;
                 });
                 callback(null, tracks);
             } else {
-                console.log('Error while getPlaylist track: ' + err);
-                callback('Error while getPlaylist track: ' + err);
+                console.log('Error while getPlaylistById track: ' + err);
+                callback('Error while getPlaylistById track: ' + err);
 
             }
         });
@@ -326,17 +326,17 @@ exports.getPlaylistById = function (options, callback) {
 
 exports.removePlaylist = function (options, callback) {
     if (options.oauth_token === undefined) {
-        callback('Error options.oauth_token is required and is: ' + options.oauth_token);
+        callback('Error removePlaylist options.oauth_token is required and is: ' + options.oauth_token);
         return;
     } else if ( options.title === undefined) {
-        callback('Error  options.title is required and is: ' +  options.title);
+        callback('Error removePlaylist options.title is required and is: ' +  options.title);
         return;
     }else {
         var uri = 'https://api.soundcloud.com/playlists/' + options.title + '?oauth_token=' + options.oauth_token + '&format=json';
         request(uri, {method: 'DELETE'}, function (err, response) {
             if (err || response.body !== undefined && response.body.indexOf(404) !== -1) {
-                console.log('Error while deleting track: ' + response.body);
-                callback('Error while uploading track: ' + response.body);
+                console.log('Error while removePlaylist track: ' + response.body);
+                callback('Error while removePlaylist track: ' + response.body);
             } else {
                 callback(null, {result: response.body});
             }

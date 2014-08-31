@@ -43,7 +43,8 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
                     console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
                 } else {
                     var playlist = {
-                        title: 'test_1',
+                        //set here the desired playlist title
+                        title: 'test_3',
                         oauth_token: token.access_token
                     };
 
@@ -52,15 +53,17 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
                             console.log(err);
                         } else {
 
-
                             playlist = _.findWhere(playlistFound, {'title': playlist.title});
 
-                            if (!playlist.id) {
-                                console.log('playlist not found playlist.title: ' + playlist.title);
+                            if (!playlist || !playlist.id) {
+                                console.log('playlist not found playlist.title: ' + playlist);
                             } else {
                                 console.log('playlist found id: ' + playlist.id);
+                                console.log('playlist tracks: ' + playlist.tracks);
+                                console.log('playlist add  track.id: ' + track.id );
+
                                 playlist.oauth_token = token.access_token;
-                                playlist.tracks = [{ id: track.id }];
+                                playlist.track = { id: track.id };
 
                                 soundcloudnodejs.addTrackToPlaylist(playlist, function (err, track) {
                                     if (err) {
