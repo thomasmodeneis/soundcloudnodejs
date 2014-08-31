@@ -129,6 +129,63 @@ exports.getTracks = function (options, callback) {
     }
 };
 
+exports.searchTrack_q = function (options, callback) {
+    if (options.oauth_token === undefined) {
+        callback('Error searchTrack_q oauth_token is required and is: ' + options.oauth_token);
+        return;
+    } else {
+
+        if (options.q === undefined) {
+            callback('Error searchTrack_q options.q is required and is: ' + options.q);
+            return;
+        } else {
+            var uri = 'https://api.soundcloud.com/me/tracks?format=json&oauth_token=' + options.oauth_token + '&q=' + options.q;
+            request(uri, function (err, response, body) {
+                if (!err) {
+                    console.log('getTracks successful');
+                    callback(null, JSON.parse(body.toString('utf8')));
+                } else {
+                    console.log('Error while searchTrack_q track: ' + err);
+                    callback('Error while searchTrack_q track: ' + err);
+
+                }
+            });
+        }
+    }
+};
+
+exports.resolveUri = function (options, callback) {
+    if (options.client_id === undefined) {
+        callback('Error resolveTrack options.client_id is required and is: ' + options.client_id);
+        return;
+    } else {
+
+        if (options.uri === undefined) {
+            callback('Error resolveTrack options.uri is required and is: ' + options.uri);
+        } else {
+//            http://api.soundcloud.com/resolve.json?url=https://soundcloud.com/user46387694/dog_example&client_id=6e110a037f1c9a14b1d3abd1d97f842a
+            var uri = 'http://api.soundcloud.com/resolve.json?url=' + options.uri + '&client_id=' + options.client_id;
+            request(uri, function (err, response, body) {
+                if (err) {
+                    console.log('Error while resolveTrack track: ' + err);
+                    callback('Error while resolveTrack track: ' + err);
+
+                } else {
+
+                    response.on('error', function (err) {
+                        callback('Error while resolveTrack track: ' + err);
+                    });
+
+                    console.log('resolveTrack successful');
+                    callback(null, JSON.parse(response.body.toString('utf8')));
+
+
+                }
+            });
+        }
+    }
+};
+
 
 exports.addTrackToPlaylist = function (options, callback) {
     var form = new FormData();
@@ -214,7 +271,7 @@ function parsedUrl(playlist) {
 }
 
 function trackIds(json) {
-    return _.map(json, function(track) {
+    return _.map(json, function (track) {
         return track.id;
     })
 }
@@ -303,10 +360,10 @@ exports.getPlaylistById = function (options, callback) {
     if (options.oauth_token === undefined) {
         callback('Error getPlaylistById options.oauth_token is required and is: ' + options.oauth_token);
         return;
-    } else if ( options.id === undefined) {
-        callback('Error getPlaylistById options.id is required and is: ' +  options.id);
+    } else if (options.id === undefined) {
+        callback('Error getPlaylistById options.id is required and is: ' + options.id);
         return;
-    }else {
+    } else {
         var uri = 'https://api.soundcloud.com/me/playlists/' + options.id + '?format=json&oauth_token=' + options.oauth_token;
         request(uri, function (err, response, body) {
             if (!err) {
@@ -328,10 +385,10 @@ exports.removePlaylist = function (options, callback) {
     if (options.oauth_token === undefined) {
         callback('Error removePlaylist options.oauth_token is required and is: ' + options.oauth_token);
         return;
-    } else if ( options.title === undefined) {
-        callback('Error removePlaylist options.title is required and is: ' +  options.title);
+    } else if (options.title === undefined) {
+        callback('Error removePlaylist options.title is required and is: ' + options.title);
         return;
-    }else {
+    } else {
         var uri = 'https://api.soundcloud.com/playlists/' + options.title + '?oauth_token=' + options.oauth_token + '&format=json';
         request(uri, {method: 'DELETE'}, function (err, response) {
             if (err || response.body !== undefined && response.body.indexOf(404) !== -1) {
