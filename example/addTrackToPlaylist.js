@@ -1,4 +1,5 @@
 /**
+ * add track to existing playlist
  * @author Thomas Modeneis <thomas.modeneis@gmail.com>
  */
 'use strict';
@@ -6,6 +7,7 @@ var soundcloudnodejs = require('../soundcloudnodejs');
 var fs = require('fs');
 
 var config = require('../config');
+var _ = require('underscore');
 
 var options = {
     client_id: config.client_id,
@@ -33,32 +35,44 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
 
         soundcloudnodejs.addTrack(track, function (err, track) {
 
-            if(err){
+            if (err) {
                 console.log(err);
-            }else {
+            } else {
 
-                var playlist = {
-                    oauth_token: token.access_token,
-                    title: 'test_' + Math.floor((Math.random() * 10) + 1),
-                    sharing: 'public',
-                    tracks: { id: track.id }
-                };
-
-                /**
-                 * If playlist does not exist will create new one
-                 */
-                soundcloudnodejs.addTrackToPlaylist(playlist, function (err, track) {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        console.log(track);
-                    }
-
-                });
-                if (err) {
-                    console.log(err);
+                if (err || token.access_token === undefined) {
+                    console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
                 } else {
-                    console.log(track);
+                    var playlist = {
+                        title: 'test_1',
+                        oauth_token: token.access_token
+                    };
+
+                    soundcloudnodejs.getPlaylist(playlist, function (err, playlistFound) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+
+
+                            playlist = _.findWhere(playlistFound, {'title': playlist.title});
+
+                            if (!playlist.id) {
+                                console.log('playlist not found playlist.title: ' + playlist.title);
+                            } else {
+                                console.log('playlist found id: ' + playlist.id);
+                                playlist.oauth_token = token.access_token;
+                                playlist.tracks = [{ id: track.id }];
+
+                                soundcloudnodejs.addTrackToPlaylist(playlist, function (err, track) {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        console.log(track);
+                                    }
+
+                                });
+                            }
+                        }
+                    });
                 }
             }
 

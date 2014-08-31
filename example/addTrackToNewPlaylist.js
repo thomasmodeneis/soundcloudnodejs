@@ -17,10 +17,10 @@ var options = {
 }
 
 soundcloudnodejs.getToken(options, function (err, token, meta) {
-
     if (err || token.access_token === undefined) {
         console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
     } else {
+
         var track = {
             title: 'dog_example',
             description: 'dog_example',
@@ -32,10 +32,11 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
         }
 
         soundcloudnodejs.addTrack(track, function (err, track) {
-            if (err) {
-                console.log('addTrackToPlaylist: ' + err);
-            } else {
-                console.log('addTrackToPlaylist done: ' + JSON.stringify(track.permalink_url));
+
+            if(err){
+                console.log(err);
+            }else {
+
                 var playlist = {
                     oauth_token: token.access_token,
                     title: 'test_' + Math.floor((Math.random() * 10) + 1),
@@ -48,26 +49,20 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
                  */
                 soundcloudnodejs.addTrackToNewPlaylist(playlist, function (err, track) {
                     if (err) {
-                        console.log('addTrackToPlaylist: ' + err);
+                        console.log(err);
                     } else {
-                        console.log('addTrackToPlaylist done: ' + JSON.stringify(track.permalink_url));
-
-                        playlist.oauth_token = token.access_token;
-
-                        soundcloudnodejs.removePlaylist(playlist, function (err, response) {
-                            if (err) {
-                                console.log('removePlaylist err: ' + err);
-                            } else {
-                                console.log('removePlaylist done: ' + JSON.stringify(response));
-                            }
-                        });
+                        console.log(track);
                     }
 
                 });
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(track);
+                }
             }
 
         });
     }
-
 
 })
