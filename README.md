@@ -11,15 +11,15 @@ npm install soundcloudnodejs
 
 Register your app http://soundcloud.com/you/apps/new
 
-```
-var soundcloudnodejs = require('soundcloudnodejs');
+
+var soundcloudnodejs = require("soundcloudnodejs");
 var options = {
-    client_id: "",
-    client_secret: "",
-    grant_type: '',
-    username: "",
-    password: "",
-    redirect_uri: ""
+    client_id: "your_client_id",
+    client_secret: "your_client_secret",
+    grant_type: "password",
+    username: "your_username",
+    password: "your_password",
+    redirect_uri: "your_redirect_uri"
 }
 soundcloudnodejs.getToken(options, function (err, token, meta) {
     config.access_token = token.access_token;
@@ -28,4 +28,4 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
 
 ```
 
-No bla bla bla and many examples --> see folder /example.
+For usage see folder [soundcloudnodejs/example/](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/example) .
