@@ -96,7 +96,7 @@ exports.removeTrack = function (options, callback) {
     } else {
 
         var uri = 'https://api.soundcloud.com/tracks/' + options.id + '?oauth_token=' + options.oauth_token + '&format=json';
-        request(uri, {method: 'DELETE'}, function (err, response) {
+        request(uri, {method: 'DELETE',timeout:10000}, function (err, response) {
             if (err || response.body !== undefined && response.body.indexOf(404) !== -1) {
                 console.log('Error while removeTrack track: ' + response.body);
                 callback('Error while removeTrack track: ' + response.body);
@@ -113,7 +113,7 @@ exports.getTracks = function (options, callback) {
         return;
     } else {
         var uri = 'https://api.soundcloud.com/me/tracks?format=json&oauth_token=' + options.oauth_token;
-        request(uri, function (err, response, body) {
+        request(uri, {timeout:10000}, function (err, response, body) {
             if (!err) {
                 console.log('getTracks successful');
                 var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
@@ -140,7 +140,7 @@ exports.searchTrack_q = function (options, callback) {
             return;
         } else {
             var uri = 'https://api.soundcloud.com/me/tracks?format=json&oauth_token=' + options.oauth_token + '&q=' + options.q;
-            request(uri, function (err, response, body) {
+            request(uri, {timeout:10000}, function (err, response, body) {
                 if (!err) {
                     console.log('getTracks successful');
                     callback(null, JSON.parse(body.toString('utf8')));
@@ -156,27 +156,29 @@ exports.searchTrack_q = function (options, callback) {
 
 exports.resolveUri = function (options, callback) {
     if (options.client_id === undefined) {
-        callback('Error resolveTrack options.client_id is required and is: ' + options.client_id);
+        callback('Error resolveUri options.client_id is required and is: ' + options.client_id);
         return;
     } else {
 
         if (options.uri === undefined) {
-            callback('Error resolveTrack options.uri is required and is: ' + options.uri);
+            callback('Error resolveUri options.uri is required and is: ' + options.uri);
         } else {
 //            http://api.soundcloud.com/resolve.json?url=https://soundcloud.com/user46387694/dog_example&client_id=6e110a037f1c9a14b1d3abd1d97f842a
             var uri = 'http://api.soundcloud.com/resolve.json?url=' + options.uri + '&client_id=' + options.client_id;
-            request(uri, function (err, response, body) {
-                if (err) {
-                    console.log('Error while resolveTrack track: ' + err);
-                    callback('Error while resolveTrack track: ' + err);
+            request(uri, {timeout:10000}, function (err, response, body) {
+
+//                console.log(response.body);
+
+                if (err !== null || (response.body !== undefined && response.body.indexOf('404') !== -1)) {
+
+//                    console.log(response.body);
+                    console.log('Error while resolveUri track: ' + err);
+                    callback('Error while resolveUri track: ' + err);
+
 
                 } else {
 
-                    response.on('error', function (err) {
-                        callback('Error while resolveTrack track: ' + err);
-                    });
-
-                    console.log('resolveTrack successful');
+                    console.log('resolveUri successful');
                     callback(null, JSON.parse(response.body.toString('utf8')));
 
 
@@ -233,9 +235,23 @@ exports.addTrackToPlaylist = function (options, callback) {
         form.append('oauth_token', options.oauth_token);
     }
 
+    var finish = false;
+    setTimeout(function(){
+        if(finish == false){
+            console.log('timeout of 15s kick in');
+            finish = true;
+            callback('Error timeout addTrackToPlaylist: ');
+        }
+    },20000);
+
+
+
     console.log(parsedUrl(options));
     form.submit(parsedUrl(options), function (err, response) {
         if (!err) {
+            finish = true;
+
+            console.log('reset finish');
 
             response.on('error', function (err) {
                 callback('Error while addTrackToPlaylist track: ' + err);
@@ -248,10 +264,15 @@ exports.addTrackToPlaylist = function (options, callback) {
 
             response.on('end', function () {
                 console.log('addPlaylist successful');
-                callback(null, JSON.parse(data.toString('utf8')));
+                if(data.toString('utf8').indexOf('xml')!==-1){
+                    callback(null, data.toString('utf8'));
+                }else {
+                    callback(null, JSON.parse(data.toString('utf8')));
+                }
             });
 
         } else {
+            finish = true;
             console.log('Error while addTrackToPlaylist track: ' + err);
             callback('Error while addTrackToPlaylist track: ' + err);
 
@@ -266,7 +287,8 @@ function parsedUrl(playlist) {
         method: 'put',
         host: playListUri.host,
         path: playListUri.path,
-        protocol: playListUri.protocol
+        protocol: playListUri.protocol,
+        timeout:10000
     };
 }
 
@@ -340,7 +362,7 @@ exports.getPlaylist = function (options, callback) {
         return;
     } else {
         var uri = 'https://api.soundcloud.com/me/playlists?format=json&oauth_token=' + options.oauth_token;
-        request(uri, function (err, response, body) {
+        request(uri, {timeout:10000}, function (err, response, body) {
             if (!err) {
                 console.log('getPlaylist successful');
                 var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
@@ -365,7 +387,7 @@ exports.getPlaylistById = function (options, callback) {
         return;
     } else {
         var uri = 'https://api.soundcloud.com/me/playlists/' + options.id + '?format=json&oauth_token=' + options.oauth_token;
-        request(uri, function (err, response, body) {
+        request(uri, {timeout:10000}, function (err, response, body) {
             if (!err) {
                 console.log('getPlaylistById successful');
                 var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
@@ -390,7 +412,7 @@ exports.removePlaylist = function (options, callback) {
         return;
     } else {
         var uri = 'https://api.soundcloud.com/playlists/' + options.title + '?oauth_token=' + options.oauth_token + '&format=json';
-        request(uri, {method: 'DELETE'}, function (err, response) {
+        request(uri, {method: 'DELETE', timeout:10000}, function (err, response) {
             if (err || response.body !== undefined && response.body.indexOf(404) !== -1) {
                 console.log('Error while removePlaylist track: ' + response.body);
                 callback('Error while removePlaylist track: ' + response.body);
@@ -408,10 +430,15 @@ exports.getToken = function (options, callback) {
         'method': 'POST',
         verbose: true,
         encoding: 'utf8',
-        data: options
+        data: options,
+        timeout:10000
     };
 
     curlrequest.request(curl_options, function (err, data, meta) {
-        callback(err, JSON.parse(data), meta);
+        if(err || !data){
+            callback(err, null, meta);
+        }else {
+            callback(err, JSON.parse(data), meta);
+        }
     });
 }
