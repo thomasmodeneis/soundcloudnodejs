@@ -1,26 +1,23 @@
 /**
- * @author Thomas Modeneis <thomas.modeneis@gmail.com>
+ * @author Thomas Modeneis
  */
 'use strict';
 var soundcloudnodejs = require('../soundcloudnodejs');
 var fs = require('fs');
 
-var config = require('../config');
-
 var options = {
-    client_id: config.client_id,
-    client_secret: config.client_secret,
-    grant_type: config.grant_type,
-    redirect_uri: config.redirect_uri,
-    username: config.username,
-    password: config.password
-}
+    client_id: process.env.client_id || credentials.client_id,
+    client_secret: process.env.client_secret || credentials.client_secret,
+    grant_type: process.env.grant_type ||credentials.grant_type,
+    redirect_uri: process.env.redirect_uri || credentials.redirect_uri,
+    username: process.env.username || credentials.username,
+    password: process.env.password || credentials.password
+};
 
 soundcloudnodejs.getToken(options, function (err, token, meta) {
 
-
-    if (err || token.access_token === undefined) {
-        console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
+    if (err || !token || !token.access_token) {
+        console.log('getToken err: ' + err + ' token.access_token ');
     } else {
         var track = {
             title: 'dog_example',
@@ -30,7 +27,7 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
             sharing: 'public',
             oauth_token: token.access_token,
             asset_data: __dirname + '/dog/dog_example.mp3'
-        }
+        };
 
         soundcloudnodejs.addTrack(track, function (err, track) {
 
@@ -48,4 +45,4 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
         });
     }
 
-})
+});

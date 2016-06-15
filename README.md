@@ -6,12 +6,15 @@ soundcloudnodejs is a nodejs module to access [soundcloud](https://www.soundclou
 
 ## Install
 ```bash
-npm install soundcloudnodejs
+npm install --save soundcloudnodejs
+```
 
-
+## Register
 Register your app http://soundcloud.com/you/apps/new
 
 
+Example Code to get your Token Access from SoundCloud API
+```
 var soundcloudnodejs = require("soundcloudnodejs");
 var options = {
     client_id: "your_client_id",
@@ -33,9 +36,9 @@ For usage see folder [soundcloudnodejs/example/](https://github.com/thomasmodene
 
 # License
 
-The MIT License (MIT)
+```The MIT License (MIT)
 
-Copyright (c) 2014 [Thomas Modeneis](http://www.thomasmodeneis.com)
+Copyright (c) 2016 Thomas Modeneis
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -53,4 +56,4 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+```
