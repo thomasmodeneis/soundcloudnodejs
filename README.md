@@ -35,7 +35,8 @@ For usage see folder [soundcloudnodejs/example/](https://github.com/thomasmodene
 
 # License
 
-```The MIT License (MIT)
+```
+The MIT License (MIT)
 
 Copyright (c) 2016 Thomas Modeneis
 
