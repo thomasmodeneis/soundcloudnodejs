@@ -18,10 +18,10 @@ var options = {
     password: process.env.password || credentials.password
 };
 
-soundcloudnodejs.getToken(options, function (err, token) {
+soundcloudnodejs.getToken(options).then(function (token) {
 
-    if (err || !token || !token.access_token) {
-        console.log('getToken err: ' + err + ' token.access_token ');
+    if (!token || !token.access_token) {
+        console.log('getToken err: undefined token.access_token ');
     } else {
 
         var track = {
@@ -34,13 +34,8 @@ soundcloudnodejs.getToken(options, function (err, token) {
             asset_data: __dirname + '/dog/dog_example.mp3'
         };
 
-        soundcloudnodejs.addTrack(track, function (err, track) {
-            if (err) {
-                console.log(err);
-            } else {
+        soundcloudnodejs.addTrack(track).then( function (track) {
                 console.log(track);
-            }
-
         });
     }
 

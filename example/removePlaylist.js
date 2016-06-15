@@ -10,15 +10,15 @@ var credentials = require('credentials');
 var options = {
     client_id: process.env.client_id || credentials.client_id,
     client_secret: process.env.client_secret || credentials.client_secret,
-    grant_type: process.env.grant_type ||credentials.grant_type,
+    grant_type: process.env.grant_type || credentials.grant_type,
     redirect_uri: process.env.redirect_uri || credentials.redirect_uri,
     username: process.env.username || credentials.username,
     password: process.env.password || credentials.password
 };
-soundcloudnodejs.getToken(options, function (err, token, meta) {
+soundcloudnodejs.getToken(options).then(function (token, meta) {
 
-    if (err || !token || !token.access_token) {
-        console.log('getToken err: ' + err + ' token.access_token ');
+    if (!token || !token.access_token) {
+        console.log('getToken err: token.access_token ');
     } else {
         var track = {
             title: 'dog_example',
@@ -30,43 +30,34 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
             asset_data: __dirname + '/dog/dog_example.mp3'
         };
 
-        soundcloudnodejs.addTrack(track, function (err, track) {
-            if (err) {
-                console.log('addTrackToPlaylist: ' + err);
-            } else {
+        soundcloudnodejs.addTrack(track).then(function (track) {
+            console.log('addTrackToPlaylist done: ' + JSON.stringify(track.permalink_url));
+            var playlist = {
+                oauth_token: token.access_token,
+                title: 'test_' + Math.floor((Math.random() * 10) + 1),
+                sharing: 'public',
+                tracks: {id: track.id}
+            };
+
+            /**
+             * If playlist does not exist will create new one
+             */
+            soundcloudnodejs.addTrackToNewPlaylist(playlist).then(function (track) {
                 console.log('addTrackToPlaylist done: ' + JSON.stringify(track.permalink_url));
-                var playlist = {
-                    oauth_token: token.access_token,
-                    title: 'test_' + Math.floor((Math.random() * 10) + 1),
-                    sharing: 'public',
-                    tracks: { id: track.id }
-                };
 
-                /**
-                 * If playlist does not exist will create new one
-                 */
-                soundcloudnodejs.addTrackToNewPlaylist(playlist, function (err, track) {
+                playlist.oauth_token = token.access_token;
+
+                soundcloudnodejs.removePlaylist(playlist, function (err, response) {
                     if (err) {
-                        console.log('addTrackToPlaylist: ' + err);
+                        console.log('removePlaylist err: ' + err);
                     } else {
-                        console.log('addTrackToPlaylist done: ' + JSON.stringify(track.permalink_url));
-
-                        playlist.oauth_token = token.access_token;
-
-                        soundcloudnodejs.removePlaylist(playlist, function (err, response) {
-                            if (err) {
-                                console.log('removePlaylist err: ' + err);
-                            } else {
-                                console.log('removePlaylist done: ' + JSON.stringify(response));
-                            }
-                        });
+                        console.log('removePlaylist done: ' + JSON.stringify(response));
                     }
-
                 });
-            }
+
+            });
 
         });
     }
-
 
 });

@@ -3,33 +3,29 @@
  */
 'use strict';
 var soundcloudnodejs = require('../soundcloudnodejs');
-var fs = require('fs');
+var credentials = require('./credentials');
 
 var options = {
     client_id: process.env.client_id || credentials.client_id,
     client_secret: process.env.client_secret || credentials.client_secret,
-    grant_type: process.env.grant_type ||credentials.grant_type,
+    grant_type: process.env.grant_type || credentials.grant_type,
     redirect_uri: process.env.redirect_uri || credentials.redirect_uri,
     username: process.env.username || credentials.username,
     password: process.env.password || credentials.password
 };
 
-soundcloudnodejs.getToken(options, function (err, token) {
+soundcloudnodejs.getToken(options).then(function (token) {
 
-    if (err || !token || !token.access_token) {
-        console.log('getToken err: ' + err + ' token.access_token ');
+    if (!token || !token.access_token) {
+        console.log('getToken err: token.access_token ');
     } else {
         var track = {
             oauth_token: token.access_token,
             q: 'dog_example'
         };
 
-        soundcloudnodejs.searchTrack_q(track, function (err, track) {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(track);
-            }
+        soundcloudnodejs.searchTrack_q(track).then(function (track) {
+            console.log(track);
         });
     }
 

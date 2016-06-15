@@ -4,36 +4,33 @@
 'use strict';
 var soundcloudnodejs = require('../soundcloudnodejs');
 var fs = require('fs');
+var credentials = require('./credentials');
 
 var options = {
     client_id: process.env.client_id || credentials.client_id,
     client_secret: process.env.client_secret || credentials.client_secret,
-    grant_type: process.env.grant_type ||credentials.grant_type,
+    grant_type: process.env.grant_type || credentials.grant_type,
     redirect_uri: process.env.redirect_uri || credentials.redirect_uri,
     username: process.env.username || credentials.username,
     password: process.env.password || credentials.password
 };
 
-soundcloudnodejs.getToken(options, function (err, token, meta) {
+soundcloudnodejs.getToken(options).then(function (token, meta) {
 
-    if (err || !token || !token.access_token) {
-        console.log('getToken err: ' + err + ' token.access_token ');
+    if (!token || !token.access_token) {
+        console.log('getToken err: token.access_token ');
     } else {
         var options = {
             oauth_token: token.access_token
         };
 
-        soundcloudnodejs.getTracks(options, function (err, tracks) {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(tracks);
+        soundcloudnodejs.getTracks(options).then(function (tracks) {
+            console.log(tracks);
 
-                removeAll(tracks, token, 0, function (msg) {
-                    console.log(msg);
-                });
+            removeAll(tracks, token, 0, function (msg) {
+                console.log(msg);
+            });
 
-            }
         });
     }
 
@@ -53,17 +50,9 @@ function removeAll(tracks, token, count, callback) {
         oauth_token: token.access_token
     };
 
-    soundcloudnodejs.removeTrack(options, function (err, track) {
-        if (err) {
-            console.log(err);
-            count = count + 1;
-            //ignore and go ahead deleting till the end o/
-            removeAll(tracks, token, count, callback)
-        } else {
-            console.log(track);
-            count = count + 1;
-            removeAll(tracks, token, count, callback)
-        }
-
+    soundcloudnodejs.removeTrack(options).then(function (track) {
+        console.log(track);
+        count = count + 1;
+        removeAll(tracks, token, count, callback)
     });
 }

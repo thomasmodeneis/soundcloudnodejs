@@ -1,6 +1,6 @@
 {
   "description": "The missing NodeJS Wrapper for SoundCloud API",
-  "version": "1.1.4",
+  "version": "2.0.0",
   "homepage": "https://github.com/thomasmodeneis/soundcloudnodejs",
   "author": "Thomas Modeneis <thomas.modeneis@gmail.com>",
   "main": "soundcloudnodejs",
@@ -12,6 +12,7 @@
   },
   "keywords": [
     "soundcloud",
+    "bluebird",
     "api",
     "nodejs",
     "credentials",
@@ -21,9 +22,15 @@
     "wrapper"
   ],
   "dependencies": {
+    "bluebird": "^3.4.0",
     "curlrequest": "^0.5.7",
     "form-data": "0.1.4",
     "request": "^2.72.0",
     "underscore": "^1.7.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-mocha": "^2.2.0"
   }
 }

@@ -1,7 +1,7 @@
 #soundcloudnodejs
 ================
 
-The missing NodeJS Wrapper for SoundCloud API
+The missing Async NodeJS Wrapper for SoundCloud API
 soundcloudnodejs is a nodejs module to access [soundcloud](https://www.soundcloud.com) from NodeJS.
 
 ## Install
@@ -24,9 +24,8 @@ var options = {
     password: "your_password",
     redirect_uri: "your_redirect_uri"
 }
-soundcloudnodejs.getToken(options, function (err, token, meta) {
-    config.access_token = token.access_token;
-    console.log(config.access_token)
+soundcloudnodejs.getToken(options).then(function (token, meta) {
+    console.log(token.access_token)
 });
 
 ```

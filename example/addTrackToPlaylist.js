@@ -7,19 +7,20 @@ var soundcloudnodejs = require('../soundcloudnodejs');
 var fs = require('fs');
 
 var _ = require('underscore');
+var credentials = require('./credentials');
 
 var options = {
     client_id: process.env.client_id || credentials.client_id,
     client_secret: process.env.client_secret || credentials.client_secret,
-    grant_type: process.env.grant_type ||credentials.grant_type,
+    grant_type: process.env.grant_type || credentials.grant_type,
     redirect_uri: process.env.redirect_uri || credentials.redirect_uri,
     username: process.env.username || credentials.username,
     password: process.env.password || credentials.password
 };
 
-soundcloudnodejs.getToken(options, function (err, token, meta) {
-    if (err || !token || !token.access_token) {
-        console.log('getToken err: ' + err + ' token.access_token ');
+soundcloudnodejs.getToken(options).then(function (token, meta) {
+    if (!token || !token.access_token) {
+        console.log('getToken err: token.access_token ');
     } else {
 
         var track = {
@@ -30,55 +31,36 @@ soundcloudnodejs.getToken(options, function (err, token, meta) {
             sharing: 'public',
             oauth_token: token.access_token,
             asset_data: __dirname + '/dog/dog_example.mp3'
-        }
+        };
 
-        soundcloudnodejs.addTrack(track, function (err, track) {
+        soundcloudnodejs.addTrack(track).then(function (track) {
+            var playlist = {
+                //set here the desired playlist title
+                title: 'test_3',
+                oauth_token: token.access_token
+            };
 
-            if (err) {
-                console.log(err);
-            } else {
+            soundcloudnodejs.getPlaylist(playlist).then(function (playlistFound) {
 
-                if (err || token.access_token === undefined) {
-                    console.log('getToken err: ' + err + ' token.access_token: ' + token.access_token);
+                playlist = _.findWhere(playlistFound, {'title': playlist.title});
+
+                if (!playlist || !playlist.id) {
+                    console.log('playlist not found playlist.title: ' + playlist);
                 } else {
-                    var playlist = {
-                        //set here the desired playlist title
-                        title: 'test_3',
-                        oauth_token: token.access_token
-                    };
+                    console.log('playlist found id: ' + playlist.id);
+                    console.log('playlist tracks: ' + playlist.tracks);
+                    console.log('playlist add  track.id: ' + track.id);
 
-                    soundcloudnodejs.getPlaylist(playlist, function (err, playlistFound) {
-                        if (err) {
-                            console.log(err);
-                        } else {
+                    playlist.oauth_token = token.access_token;
+                    playlist.track = {id: track.id};
 
-                            playlist = _.findWhere(playlistFound, {'title': playlist.title});
+                    soundcloudnodejs.addTrackToPlaylist(playlist).then(function (track) {
+                        console.log(track);
 
-                            if (!playlist || !playlist.id) {
-                                console.log('playlist not found playlist.title: ' + playlist);
-                            } else {
-                                console.log('playlist found id: ' + playlist.id);
-                                console.log('playlist tracks: ' + playlist.tracks);
-                                console.log('playlist add  track.id: ' + track.id );
-
-                                playlist.oauth_token = token.access_token;
-                                playlist.track = { id: track.id };
-
-                                soundcloudnodejs.addTrackToPlaylist(playlist, function (err, track) {
-                                    if (err) {
-                                        console.log(err);
-                                    } else {
-                                        console.log(track);
-                                    }
-
-                                });
-                            }
-                        }
                     });
                 }
-            }
+            });
 
         });
     }
-
-})
+});
