@@ -18,10 +18,7 @@ var fetch = require('node-fetch');
 
 var DEBUG_MODE_ON = process.env.SOUNDCLOUDJS_DEBUG || false;
 
-if (!DEBUG_MODE_ON) {
-    console.log = function () {
-    };
-}
+
 /**
  * Add a new track
  * @param options
@@ -71,7 +68,9 @@ function addTrack(options, cb) {
     } else {
 
         var exist_asset_data = fs.existsSync(options.asset_data);
-        console.log("addTrack, exist_asset_data, ", exist_asset_data);
+        if(DEBUG_MODE_ON) {
+            console.log("addTrack, exist_asset_data, ", exist_asset_data);
+        }
 
         if (exist_asset_data) {
             form.append('track[asset_data]', fs.createReadStream(options.asset_data));
@@ -89,7 +88,9 @@ function addTrack(options, cb) {
         }).then(function (res) {
             return res.json();
         }).then(function (json) {
-            console.log('addTrack successful');
+            if(DEBUG_MODE_ON) {
+                console.log('addTrack successful');
+            }
             cb(null, json);
         });
     });
@@ -109,10 +110,14 @@ function removeTrack(options) {
             var uri = 'https://api.soundcloud.com/tracks/' + options.id + '?oauth_token=' + options.oauth_token + '&format=json';
             request.getAsync(uri, {method: 'DELETE', timeout: 10000}).spread(function (response) {
                 if (response.statusCode == 404) {
-                    console.log('Error: removeTrack, 404, track was not found ', response.statusCode);
+                    if(DEBUG_MODE_ON) {
+                        console.log('Error: removeTrack, 404, track was not found ', response.statusCode);
+                    }
                     reject(new Error('Error 404, track was not found ', response.statusCode));
                 } else if (!response.body || response.body.indexOf(404) !== -1) {
-                    console.log('Error: removeTrack, while removeTrack track: ', response);
+                    if(DEBUG_MODE_ON) {
+                        console.log('Error: removeTrack, while removeTrack track: ', response);
+                    }
                     reject(new Error('Error while removeTrack track: ' + response.body));
                 } else {
                     resolve({result: response.body});
@@ -134,18 +139,24 @@ function getTracks(options) {
         } else {
             var uri = 'https://api.soundcloud.com/me/tracks?format=json&oauth_token=' + options.oauth_token;
             request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
-                console.log('getTracks successful');
+                if(DEBUG_MODE_ON) {
+                    console.log('getTracks successful');
+                }
                 try {
                     var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
                         return track;
                     });
                     resolve(tracks);
                 } catch (e) {
-                    console.log('Error while getTracks track: ' + e);
+                    if(DEBUG_MODE_ON) {
+                        console.log('Error while getTracks track: ' + e);
+                    }
                     reject(new Error('Error while getTracks track: ' + e));
                 }
             }).catch(function (e) {
-                console.log('Error while getTracks track: ', e);
+                if(DEBUG_MODE_ON) {
+                    console.log('Error while getTracks track: ', e);
+                }
                 reject(e);
             });
         }
@@ -167,7 +178,9 @@ function searchTrack_q(options) {
                 reject(new Error('Error searchTrack_q options.q is required and is null'));
             } else {
                 var uri = 'https://api.soundcloud.com/me/tracks?format=json&oauth_token=' + options.oauth_token + '&q=' + options.q;
-                console.log("searchTrack_q URI, ", uri);
+                if(DEBUG_MODE_ON) {
+                    console.log("searchTrack_q URI, ", uri);
+                }
 
                 request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
                     //console.log('searchTrack_q successful',body);
@@ -175,11 +188,15 @@ function searchTrack_q(options) {
                         //console.log(body.toString('utf8'))
                         resolve(JSON.parse(body.toString('utf8')));
                     } catch (e) {
-                        console.log('Error while searchTrack_q track: ', e);
+                        if(DEBUG_MODE_ON) {
+                            console.log('Error while searchTrack_q track: ', e);
+                        }
                         reject(e);
                     }
                 }).catch(function (e) {
-                    console.log('Error while searchTrack_q track: ', e);
+                    if(DEBUG_MODE_ON) {
+                        console.log('Error while searchTrack_q track: ', e);
+                    }
                     reject(e);
                 });
             }
@@ -205,21 +222,29 @@ function resolveUri(options) {
                 request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
 
                     if (!response.body || response.body.indexOf('404') !== -1) {
-                        console.log('Error while resolveUri track: ');
+                        if(DEBUG_MODE_ON) {
+                            console.log('Error while resolveUri track: ');
+                        }
                         reject(new Error('Error while resolveUri track: '));
 
                     } else {
-                        console.log('resolveUri successful');
+                        if(DEBUG_MODE_ON) {
+                            console.log('resolveUri successful');
+                        }
                         try {
                             resolve(JSON.parse(response.body.toString('utf8')));
                         } catch (e) {
-                            console.log('Error while resolveUri track: ' + e);
+                            if(DEBUG_MODE_ON) {
+                                console.log('Error while resolveUri track: ' + e);
+                            }
                             reject(new Error('Error while resolveUri track: ' + e));
                         }
 
                     }
                 }).catch(function (e) {
-                    console.log('Error while resolveUri track: ', e);
+                    if(DEBUG_MODE_ON) {
+                        console.log('Error while resolveUri track: ', e);
+                    }
                     reject(e);
                 });
             }
@@ -272,12 +297,18 @@ function addTrackToPlaylist(options, cb) {
     }
 
     form.submit(parsedUrl(options), function (err, response) {
-        console.log("addTrackToPlaylist, submit, ", response.statusCode)
+        if(DEBUG_MODE_ON) {
+            console.log("addTrackToPlaylist, submit, ", response.statusCode);
+        }
         if (err) {
-            console.log('Error while addTrackToPlaylist track: ', err);
+            if(DEBUG_MODE_ON) {
+                console.log('Error while addTrackToPlaylist track: ', err);
+            }
             cb(err);
         } else if (response.statusCode !== 200) {
-            console.log(`addTrackToPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
+            if(DEBUG_MODE_ON) {
+                console.log(`addTrackToPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
+            }
             cb(`addTrackToPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
         } else {
             //SoundCloud API is inconsistent, the fact that the response can't be marshaled does not mean request failed :|
@@ -324,10 +355,14 @@ function addTrackToNewPlaylist(options, cb) {
     form.submit('https://api.soundcloud.com/playlists', function (err, response) {
 
         if (err) {
-            console.log('Error while addTrackToNewPlaylist track: ' + err);
+            if(DEBUG_MODE_ON) {
+                console.log('Error while addTrackToNewPlaylist track: ' + err);
+            }
             cb(err);
         } else if (response.statusCode !== 200) {
-            console.log(`addTrackToNewPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
+            if(DEBUG_MODE_ON) {
+                console.log(`addTrackToNewPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
+            }
             cb(`addTrackToNewPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
         } else {
             //SoundCloud API is inconsistent, the fact that the response can't be marshaled does not mean request failed :|
@@ -354,15 +389,21 @@ function getPlaylist(options) {
                     var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
                         return track;
                     });
-                    console.log('getPlaylist successful');
+                    if(DEBUG_MODE_ON) {
+                        console.log('getPlaylist successful');
+                    }
                     resolve(tracks);
                     return null;
                 } catch (e) {
-                    console.log('Error while getPlaylist track: ' + e);
+                    if(DEBUG_MODE_ON) {
+                        console.log('Error while getPlaylist track: ' + e);
+                    }
                     reject(e);
                 }
             }).catch(function (e) {
-                console.log('Error while getPlaylist track: ' + e);
+                if(DEBUG_MODE_ON) {
+                    console.log('Error while getPlaylist track: ' + e);
+                }
                 reject(e);
             })
         }
@@ -384,18 +425,24 @@ function getPlaylistById(options) {
         } else {
             var uri = 'https://api.soundcloud.com/me/playlists/' + options.id + '?format=json&oauth_token=' + options.oauth_token;
             request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
-                console.log('getPlaylistById successful');
+                if(DEBUG_MODE_ON) {
+                    console.log('getPlaylistById successful');
+                }
                 try {
                     var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
                         return track;
                     });
                     resolve(tracks);
                 } catch (e) {
-                    console.log('Error while getPlaylistById track: ' + e);
+                    if(DEBUG_MODE_ON) {
+                        console.log('Error while getPlaylistById track: ' + e);
+                    }
                     reject(e);
                 }
             }).catch(function (e) {
-                console.log('Error while getPlaylistById track: ' + e);
+                if(DEBUG_MODE_ON) {
+                    console.log('Error while getPlaylistById track: ' + e);
+                }
                 reject(e);
             });
         }
@@ -430,7 +477,9 @@ function removePlaylist(options) {
                     resolve({result: response.body});
                 }
             }).catch(function (e) {
-                console.log('Error while removePlaylist track: ', e);
+                if(DEBUG_MODE_ON) {
+                    console.log('Error while removePlaylist track: ', e);
+                }
                 //soundcloud returns 401 but playlist is 99% times removed so...ignore this
                 resolve("");
             });
@@ -458,16 +507,22 @@ function getToken(options) {
 
         curlrequest.request(curl_options, function (err, data, meta) {
             if (err) {
-                console.log("Error: getToken, ", err, data, meta);
+                if(DEBUG_MODE_ON) {
+                    console.log("Error: getToken, ", err, data, meta);
+                }
                 resolve(null);
             } else if (!data) {
-                console.log("Error: getToken, data is null ", data, meta);
+                if(DEBUG_MODE_ON) {
+                    console.log("Error: getToken, data is null ", data, meta);
+                }
                 resolve(null);
             } else {
                 try {
                     resolve(JSON.parse(data), meta);
                 } catch (e) {
-                    console.log("Error: getToken, catch, ", e, data, meta);
+                    if(DEBUG_MODE_ON) {
+                        console.log("Error: getToken, catch, ", e, data, meta);
+                    }
                     resolve(null);
                 }
             }
