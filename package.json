@@ -24,7 +24,8 @@
   "dependencies": {
     "bluebird": "^3.4.0",
     "curlrequest": "^0.5.7",
-    "form-data": "0.1.4",
+    "form-data": "^1.0.0-rc4",
+    "node-fetch": "^1.5.3",
     "request": "^2.72.0",
     "underscore": "^1.7.0"
   },

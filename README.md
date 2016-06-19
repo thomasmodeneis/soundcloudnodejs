@@ -33,6 +33,10 @@ soundcloudnodejs.getToken(options).then(function (token, meta) {
 For usage see folder [soundcloudnodejs/example/](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/example) .
 
 
+# DEBUG
+
+To enable debug mode, run scripts with env variable SOUNDCLOUDJS_DEBUG=true
+
 # License
 
 ```

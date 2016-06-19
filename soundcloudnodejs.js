@@ -3,125 +3,117 @@
  */
 
 'use strict';
+var Promise = require("bluebird");
 var curlrequest = require('curlrequest');
+
 var request = require('request');
+Promise.promisifyAll(request, {multiArgs: true});
+
 var fs = require('fs');
 var _ = require('underscore');
 var FormData = require('form-data');
-var Promise = require("bluebird");
 var URL = require('url');
 
+var fetch = require('node-fetch');
+
+var DEBUG_MODE_ON = process.env.SOUNDCLOUDJS_DEBUG || false;
+
+if (!DEBUG_MODE_ON) {
+    console.log = function () {
+    };
+}
 /**
- * Add New Track
+ * Add a new track
  * @param options
- * @param callback
+ * @param cb
+ * @returns {*}
  */
-function addTrack(options) {
-    return new Promise(function (resolve, reject) {
-        var form = new FormData();
+function addTrack(options, cb) {
+    var form = new FormData();
 
-        form.append('format', 'json');
-        if (!options.title) {
-            reject('Error while addTrack track options.title is required but is null');
-            return;
+    form.append('format', 'json');
+    if (!options.title) {
+        return cb('Error while addTrack track options.title is required but is null');
+    } else {
+        form.append('track[title]', options.title);
+    }
+    if (!options.description) {
+        return cb('Error  while addTrack track options.description is required but is null');
+    } else {
+        form.append('track[description]', options.description);
+    }
+    if (!options.genre) {
+        return cb('Error  while addTrack track options.genre is required but is null');
+    } else {
+        form.append('track[genre]', options.genre);
+    }
+
+    var exist_artwork_data = fs.existsSync(options.artwork_data);
+    if (exist_artwork_data) {
+        form.append('track[artwork_data]', fs.createReadStream(options.artwork_data));
+    }
+
+    if (options.tag_list) {
+        form.append('track[tag_list]', options.tag_list);
+    }
+
+    form.append('track[sharing]', options.sharing);
+
+    if (!options.oauth_token) {
+        return cb('Error  while addTrack track oauth_token is required but is null');
+    } else {
+        form.append('oauth_token', options.oauth_token);
+    }
+
+
+    if (!options.asset_data) {
+        return cb('Error  while addTrack track options.asset_data is required but is null');
+    } else {
+
+        var exist_asset_data = fs.existsSync(options.asset_data);
+        console.log("addTrack, exist_asset_data, ", exist_asset_data);
+
+        if (exist_asset_data) {
+            form.append('track[asset_data]', fs.createReadStream(options.asset_data));
         } else {
-            form.append('track[title]', options.title);
+            return cb('Error addTrack could not find options.asset_data --> fs.createReadStream(options.asset_data): ' + exist_asset_data);
         }
-        if (!options.description) {
-            reject('Error  while addTrack track options.description is required but is null');
-            return;
-        } else {
-            form.append('track[description]', options.description);
-        }
-        if (!options.genre) {
-            reject('Error  while addTrack track options.genre is required but is null');
-            return;
-        } else {
-            form.append('track[genre]', options.genre);
-        }
+    }
 
+    form.getLength(function (err, length) {
 
-        var exist_artwork_data = fs.existsSync(options.artwork_data);
-        if (exist_artwork_data) {
-            form.append('track[artwork_data]', fs.createReadStream(options.artwork_data));
-        }
-
-        if (options.tag_list) {
-            form.append('track[tag_list]', options.tag_list);
-        }
-
-        form.append('track[sharing]', options.sharing);
-
-        if (!options.oauth_token) {
-            reject('Error  while addTrack track oauth_token is required but is null');
-            return;
-        } else {
-            form.append('oauth_token', options.oauth_token);
-        }
-
-
-        if (!options.asset_data) {
-            reject('Error  while addTrack track options.asset_data is required but is null');
-            return;
-        } else {
-
-            var exist_asset_data = fs.existsSync(options.asset_data);
-            console.log(exist_asset_data);
-
-            if (exist_asset_data) {
-                form.append('track[asset_data]', fs.createReadStream(options.asset_data));
-            } else {
-                reject('Error addTrack could not find options.asset_data --> fs.createReadStream(options.asset_data): ' + exist_asset_data);
-                return;
-            }
-        }
-
-        form.submit('https://api.soundcloud.com/tracks', function (err, response) {
-            if (!err) {
-
-                response.on('error', function (err) {
-                    reject('Error addTrack while addTrack track: ' + err);
-                });
-
-                var data = "";
-                response.on('data', function (chunk) {
-                    data = data + chunk;
-                });
-
-                response.on('end', function () {
-                    console.log('addTrack successful');
-                    try {
-                        resolve(JSON.parse(data.toString('utf8')));
-                    } catch (e) {
-                        reject(e);
-                    }
-                });
-
-            } else {
-                console.log('Error while addTrack track : ' + err);
-                reject('Error while addTrack track : ' + err);
-
-            }
+        fetch('https://api.soundcloud.com/tracks', {
+            method: 'POST',
+            body: form,
+            headers: {'content-length': length}
+        }).then(function (res) {
+            return res.json();
+        }).then(function (json) {
+            console.log('addTrack successful');
+            cb(null, json);
         });
-
     });
 }
 
 /**
- * Remove Existing track
+ * Remove a track
  * @param options
+ * @returns {bluebird|exports|module.exports}
  */
 function removeTrack(options) {
     return new Promise(function (resolve, reject) {
         if (!options.oauth_token) {
-            reject('Error removeTrack oauth_token is required but is null ');
+            reject(new Error('Error removeTrack oauth_token is required but is null '));
         } else {
 
             var uri = 'https://api.soundcloud.com/tracks/' + options.id + '?oauth_token=' + options.oauth_token + '&format=json';
-            request(uri, {method: 'DELETE', timeout: 10000}, function (err, response) {
-                if (err || !response.body || response.body.indexOf(404) !== -1) {
-                    console.log('Error while removeTrack track: ' + response.body);
-                    reject('Error while removeTrack track: ' + response.body);
+            request.getAsync(uri, {method: 'DELETE', timeout: 10000}).spread(function (response) {
+                if (response.statusCode == 404) {
+                    console.log('Error: removeTrack, 404, track was not found ', response.statusCode);
+                    reject(new Error('Error 404, track was not found ', response.statusCode));
+                } else if (!response.body || response.body.indexOf(404) !== -1) {
+                    console.log('Error: removeTrack, while removeTrack track: ', response);
+                    reject(new Error('Error while removeTrack track: ' + response.body));
                 } else {
                     resolve({result: response.body});
                 }
@@ -131,32 +123,30 @@ function removeTrack(options) {
 }
 
 /**
- *
+ * Get a list of tracks
  * @param options
- * @param callback
+ * @returns {bluebird|exports|module.exports}
  */
 function getTracks(options) {
     return new Promise(function (resolve, reject) {
         if (!options.oauth_token) {
-            reject('Error getTracks oauth_token is required but is null');
+            reject(new Error('Error getTracks oauth_token is required but is null'));
         } else {
             var uri = 'https://api.soundcloud.com/me/tracks?format=json&oauth_token=' + options.oauth_token;
-            request(uri, {timeout: 10000}, function (err, response, body) {
-                if (!err) {
-                    console.log('getTracks successful');
-                    try {
-                        var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
-                            return track;
-                        });
-                        resolve(tracks);
-                    } catch (e) {
-                        console.log('Error while getTracks track: ' + e);
-                        reject('Error while getTracks track: ' + e);
-                    }
-                } else {
-                    console.log('Error while getTracks track: ' + err);
-                    reject('Error while getTracks track: ' + err);
+            request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
+                console.log('getTracks successful');
+                try {
+                    var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
+                        return track;
+                    });
+                    resolve(tracks);
+                } catch (e) {
+                    console.log('Error while getTracks track: ' + e);
+                    reject(new Error('Error while getTracks track: ' + e));
                 }
+            }).catch(function (e) {
+                console.log('Error while getTracks track: ', e);
+                reject(e);
             });
         }
     });
@@ -165,71 +155,72 @@ function getTracks(options) {
 /**
  * Search for a track
  * @param options
+ * @returns {bluebird|exports|module.exports}
  */
 function searchTrack_q(options) {
     return new Promise(function (resolve, reject) {
         if (!options.oauth_token) {
-            reject('Error searchTrack_q oauth_token is required and is null ');
+            reject(new Error('Error searchTrack_q oauth_token is required and is null '));
         } else {
 
             if (!options.q) {
-                reject('Error searchTrack_q options.q is required and is null');
+                reject(new Error('Error searchTrack_q options.q is required and is null'));
             } else {
                 var uri = 'https://api.soundcloud.com/me/tracks?format=json&oauth_token=' + options.oauth_token + '&q=' + options.q;
-                request(uri, {timeout: 10000}, function (err, response, body) {
-                    if (!err) {
-                        console.log('getTracks successful');
-                        try {
-                            resolve(JSON.parse(body.toString('utf8')));
-                        } catch (e) {
-                            console.log('Error while searchTrack_q track: ' + e);
-                            reject('Error while searchTrack_q track: ' + e);
-                        }
-                    } else {
-                        console.log('Error while searchTrack_q track: ' + err);
-                        reject('Error while searchTrack_q track: ' + err);
+                console.log("searchTrack_q URI, ", uri);
 
+                request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
+                    //console.log('searchTrack_q successful',body);
+                    try {
+                        //console.log(body.toString('utf8'))
+                        resolve(JSON.parse(body.toString('utf8')));
+                    } catch (e) {
+                        console.log('Error while searchTrack_q track: ', e);
+                        reject(e);
                     }
+                }).catch(function (e) {
+                    console.log('Error while searchTrack_q track: ', e);
+                    reject(e);
                 });
             }
         }
     });
 }
 
-
 /**
  * Resolve a URI
  * @param options
+ * @returns {bluebird|exports|module.exports}
  */
 function resolveUri(options) {
     return new Promise(function (resolve, reject) {
         if (!options.client_id) {
-            reject('Error resolveUri options.client_id is required but is null');
+            reject(new Error('Error resolveUri options.client_id is required but is null'));
         } else {
 
             if (!options.uri) {
-                reject('Error resolveUri options.uri is required and is: ' + options.uri);
+                throw new Error('Error resolveUri options.uri is required and is: ' + options.uri);
             } else {
-//            http://api.soundcloud.com/resolve.json?url=https://soundcloud.com/user46387694/dog_example&client_id=6e110a037f1c9a14b1d3abd1d97f842a
                 var uri = 'http://api.soundcloud.com/resolve.json?url=' + options.uri + '&client_id=' + options.client_id;
-                request(uri, {timeout: 10000}, function (err, response, body) {
+                request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
 
-//                console.log(response.body);
-
-                    if (err || !response.body || response.body.indexOf('404') !== -1) {
-                        console.log('Error while resolveUri track: ' + err);
-                        reject('Error while resolveUri track: ' + err);
+                    if (!response.body || response.body.indexOf('404') !== -1) {
+                        console.log('Error while resolveUri track: ');
+                        reject(new Error('Error while resolveUri track: '));
 
                     } else {
                         console.log('resolveUri successful');
                         try {
                             resolve(JSON.parse(response.body.toString('utf8')));
                         } catch (e) {
-                            console.log('Error while resolveUri track: ' + err);
-                            reject('Error while resolveUri track: ' + err);
+                            console.log('Error while resolveUri track: ' + e);
+                            reject(new Error('Error while resolveUri track: ' + e));
                         }
 
                     }
+                }).catch(function (e) {
+                    console.log('Error while resolveUri track: ', e);
+                    reject(e);
                 });
             }
         }
@@ -237,77 +228,248 @@ function resolveUri(options) {
 }
 
 /**
- * Add track to a playlist
+ * Add track to existing playlist
  * @param options
+ * @param cb
+ * @returns {*}
  */
-function addTrackToPlaylist(options) {
+function addTrackToPlaylist(options, cb) {
+
+    var form = new FormData();
+    form.append('format', 'json');
+
+    if (!options.tracks) {
+        return cb('Error while addTrackToPlaylist options.tracks is null');
+    } else {
+        _.each(trackIds(options.tracks), function (id) {
+            //console.log(id);
+            form.append('playlist[tracks][][id]', id);
+        });
+    }
+
+    if (!options.track.id) {
+        return cb('Error while addTrackToPlaylist options.id is null');
+    } else {
+        form.append('playlist[tracks][][id]', options.track.id);
+    }
+
+    if (!options.title) {
+        return cb('Error while addTrackToPlaylist track, title is null');
+    } else {
+        form.append('playlist[title]', options.title);
+    }
+
+    if (!options.sharing) {
+        return cb('Error while addTrackToPlaylist track, sharing is null');
+    } else {
+        form.append('playlist[sharing]', options.sharing);
+    }
+
+    if (!options.oauth_token) {
+        return cb('Error while addTrackToPlaylist track oauth_token is null');
+    } else {
+        form.append('oauth_token', options.oauth_token);
+    }
+
+    form.submit(parsedUrl(options), function (err, response) {
+        console.log("addTrackToPlaylist, submit, ", response.statusCode)
+        if (err) {
+            console.log('Error while addTrackToPlaylist track: ', err);
+            cb(err);
+        } else if (response.statusCode !== 200) {
+            console.log(`addTrackToPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
+            cb(`addTrackToPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
+        } else {
+            //SoundCloud API is inconsistent, the fact that the response can't be marshaled does not mean request failed :|
+            //so we assume it worked
+            cb(null);
+        }
+    });
+}
+
+/**
+ * Add track to new playlist
+ * @param options
+ * @param cb
+ * @returns {*}
+ */
+function addTrackToNewPlaylist(options, cb) {
+
+    var form = new FormData();
+    form.append('format', 'json');
+
+    if (!options.tracks) {
+        return cb('Error while addTrackToNewPlaylist options.tracks is null');
+    } else {
+        _.each(options.tracks, function (id) {
+            form.append('playlist[tracks][][id]', id);
+        });
+    }
+    if (!options.title) {
+        return cb('Error while addTrackToNewPlaylist options.title is null');
+    } else {
+        form.append('playlist[title]', options.title);
+    }
+    if (!options.sharing) {
+        return cb('Error while addTrackToNewPlaylist options.sharing is null');
+    } else {
+        form.append('playlist[sharing]', options.sharing);
+    }
+    if (!options.oauth_token) {
+        return cb('Error while addTrackToNewPlaylist options.oauth_token is null');
+    } else {
+        form.append('oauth_token', options.oauth_token);
+    }
+
+    form.submit('https://api.soundcloud.com/playlists', function (err, response) {
+
+        if (err) {
+            console.log('Error while addTrackToNewPlaylist track: ' + err);
+            cb(err);
+        } else if (response.statusCode !== 200) {
+            console.log(`addTrackToNewPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
+            cb(`addTrackToNewPlaylist, Soundcloud API returned Error ${response.statusCode}, cuz their API does this things, but probably it went all good.`);
+        } else {
+            //SoundCloud API is inconsistent, the fact that the response can't be marshaled does not mean request failed :|
+            //so we assume it worked
+            cb(null);
+        }
+    });
+}
+
+/**
+ * Get a playlist
+ * @param options
+ * @returns {bluebird|exports|module.exports}
+ */
+function getPlaylist(options) {
     return new Promise(function (resolve, reject) {
 
-        var form = new FormData();
-        form.append('format', 'json');
-
-        if (!options.tracks) {
-            return reject('Error while addTrackToPlaylist options.tracks is null');
+        if (!options.oauth_token) {
+            reject(new Error('Error oauth_token is required, but is null'));
         } else {
-            _.each(trackIds(options.tracks), function (id) {
-                //console.log(id);
-                form.append('playlist[tracks][][id]', id);
-            });
+            var uri = 'https://api.soundcloud.com/me/playlists?format=json&oauth_token=' + options.oauth_token;
+            request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
+                try {
+                    var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
+                        return track;
+                    });
+                    console.log('getPlaylist successful');
+                    resolve(tracks);
+                    return null;
+                } catch (e) {
+                    console.log('Error while getPlaylist track: ' + e);
+                    reject(e);
+                }
+            }).catch(function (e) {
+                console.log('Error while getPlaylist track: ' + e);
+                reject(e);
+            })
         }
+    });
+}
 
-        if (!options.track.id) {
-            return reject('Error while addTrackToPlaylist options.id is null');
-        } else {
-            form.append('playlist[tracks][][id]', options.track.id);
-        }
-
-        if (!options.title) {
-            return reject('Error while addTrackToPlaylist track, title is null');
-        } else {
-            form.append('playlist[title]', options.title);
-        }
-
-        if (!options.sharing) {
-            return reject('Error while addTrackToPlaylist track, sharing is null');
-        } else {
-            form.append('playlist[sharing]', options.sharing);
-        }
+/**
+ * Get a playlist by id
+ * @param options
+ * @returns {bluebird|exports|module.exports}
+ */
+function getPlaylistById(options) {
+    return new Promise(function (resolve, reject) {
 
         if (!options.oauth_token) {
-            return reject('Error while addTrackToPlaylist track oauth_token is null');
+            reject(new Error('Error getPlaylistById options.oauth_token is required, but is null'));
+        } else if (!options.id) {
+            reject(new Error('Error getPlaylistById options.id is required, but is null'));
         } else {
-            form.append('oauth_token', options.oauth_token);
+            var uri = 'https://api.soundcloud.com/me/playlists/' + options.id + '?format=json&oauth_token=' + options.oauth_token;
+            request.getAsync(uri, {timeout: 10000}).spread(function (response, body) {
+                console.log('getPlaylistById successful');
+                try {
+                    var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
+                        return track;
+                    });
+                    resolve(tracks);
+                } catch (e) {
+                    console.log('Error while getPlaylistById track: ' + e);
+                    reject(e);
+                }
+            }).catch(function (e) {
+                console.log('Error while getPlaylistById track: ' + e);
+                reject(e);
+            });
         }
+    });
+}
 
-        form.submit(parsedUrl(options), function (err, response) {
-            if (!err) {
+/**
+ * Remove a playlist
+ * @param options
+ * @returns {bluebird|exports|module.exports}
+ */
+function removePlaylist(options) {
+    return new Promise(function (resolve, reject) {
 
-                response.on('error', function (err) {
-                    reject('Error while addTrackToPlaylist track: ' + err);
-                });
+        if (!options.oauth_token) {
+            reject(new Error('Error removePlaylist options.oauth_token is required but is null '));
+        } else if (!options.title) {
+            reject(new Error('Error removePlaylist options.title is required and but is null '));
+        } else {
+            var uri = 'https://api.soundcloud.com/playlists/' + options.title + '?oauth_token=' + options.oauth_token + '&format=json';
+            request.getAsync(uri, {method: 'DELETE', timeout: 10000}).spread(function (response) {
+                if (response.statusCode == 404) {
+                    //console.log('Error 404, track was not found ', response.statusCode);
+                    reject(new Error('Error 404, Playlist was not found ', response.statusCode));
+                } else if (response.statusCode == 500) {
+                    //console.log('Error 404, track was not found ', response.statusCode);
+                    reject(new Error('Error 500, SoundCloud API is broken :| ', response.statusCode));
+                } else if (!response.body || response.body.indexOf(404) !== -1) {
+                    //console.log('Error while removeTrack track: ', response.toJSON());
+                    reject(new Error('Error while removing Playlist: ', JSON.stringify(response)));
+                } else {
+                    resolve({result: response.body});
+                }
+            }).catch(function (e) {
+                console.log('Error while removePlaylist track: ', e);
+                //soundcloud returns 401 but playlist is 99% times removed so...ignore this
+                resolve("");
+            });
+        }
+    });
+}
 
-                var data = "";
-                response.on('data', function (chunk) {
-                    data = data + chunk;
-                });
+/**
+ * Get a fresh token, need to be use with caution as SoundCloud will allow you to get very few tokens
+ * Its smart to save your tokens and re-use it along your code
+ * @param options
+ * @returns {bluebird|exports|module.exports}
+ */
+function getToken(options) {
+    return new Promise(function (resolve) {
 
-                response.on('end', function () {
-                    console.log('addPlaylist successful');
-                    if (data.toString('utf8').indexOf('xml') !== -1) {
-                        resolve(data.toString('utf8'));
-                    } else {
-                        try {
-                            resolve(JSON.parse(data.toString('utf8')));
-                        } catch (e) {
-                            resolve({});
-                        }
-                    }
-                });
+        var curl_options = {
+            'url': 'https://api.soundcloud.com/oauth2/token',
+            'method': 'POST',
+            verbose: true,
+            encoding: 'utf8',
+            data: options,
+            timeout: 10000
+        };
 
+        curlrequest.request(curl_options, function (err, data, meta) {
+            if (err) {
+                console.log("Error: getToken, ", err, data, meta);
+                resolve(null);
+            } else if (!data) {
+                console.log("Error: getToken, data is null ", data, meta);
+                resolve(null);
             } else {
-                console.log('Error while addTrackToPlaylist track: ' + err);
-                reject('Error while addTrackToPlaylist track: ' + err);
-
+                try {
+                    resolve(JSON.parse(data), meta);
+                } catch (e) {
+                    console.log("Error: getToken, catch, ", e, data, meta);
+                    resolve(null);
+                }
             }
         });
     });
@@ -331,196 +493,6 @@ function trackIds(json) {
     })
 }
 /** END INTERNALS **/
-
-/**
- * Add track to a new playlist
- * @param options
- */
-function addTrackToNewPlaylist(options) {
-    return new Promise(function (resolve, reject) {
-
-        var form = new FormData();
-        form.append('format', 'json');
-
-        if (!options.tracks) {
-            reject('Error while addTrackToNewPlaylist options.tracks is null');
-            return;
-        } else {
-            _.each(options.tracks, function (id) {
-                form.append('playlist[tracks][][id]', id);
-            });
-        }
-        if (!options.title) {
-            reject('Error while addTrackToNewPlaylist options.title is null');
-            return;
-        } else {
-            form.append('playlist[title]', options.title);
-        }
-        if (!options.sharing) {
-            reject('Error while addTrackToNewPlaylist options.sharing is null');
-            return;
-        } else {
-            form.append('playlist[sharing]', options.sharing);
-        }
-        if (!options.oauth_token) {
-            reject('Error while addTrackToNewPlaylist options.oauth_token is null');
-            return;
-        } else {
-            form.append('oauth_token', options.oauth_token);
-        }
-
-        form.submit('https://api.soundcloud.com/playlists', function (err, response) {
-            if (!err) {
-
-                response.on('error', function (err) {
-                    reject('Error while addTrackToNewPlaylist track: ' + err);
-                });
-
-                var data = "";
-                response.on('data', function (chunk) {
-                    data = data + chunk;
-                });
-
-                response.on('end', function () {
-                    console.log('addPlaylist successful');
-                    try {
-                        console.log(data.toString('utf8'))
-                        resolve(JSON.parse(data.toString('utf8')));
-                    } catch (e) {
-                        resolve({});
-                    }
-
-                });
-
-            } else {
-                console.log('Error while addTrackToNewPlaylist track: ' + err);
-                reject('Error while addTrackToNewPlaylist track: ' + err);
-
-            }
-        });
-    });
-}
-
-/**
- * Get a playlist
- * @param options
- * @returns {*}
- */
-function getPlaylist(options) {
-    return new Promise(function (resolve, reject) {
-
-        if (!options.oauth_token) {
-            reject('Error oauth_token is required, but is null');
-        } else {
-            var uri = 'https://api.soundcloud.com/me/playlists?format=json&oauth_token=' + options.oauth_token;
-            request(uri, {timeout: 10000}, function (err, response, body) {
-                if (!err) {
-                    console.log('getPlaylist successful');
-                    try {
-                        var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
-                            return track;
-                        });
-                        resolve(tracks);
-                    } catch (e) {
-                        console.log('Error while getPlaylist track: ' + err);
-                        reject('Error while getPlaylist track: ' + err);
-                    }
-                } else {
-                    console.log('Error while getPlaylist track: ' + err);
-                    reject('Error while getPlaylist track: ' + err);
-                }
-            });
-        }
-    });
-}
-
-/**
- * Get a playlist by id
- * @param options
- * @returns {*}
- */
-function getPlaylistById(options) {
-    return new Promise(function (resolve, reject) {
-
-        if (!options.oauth_token) {
-            reject('Error getPlaylistById options.oauth_token is required, but is null');
-        } else if (!options.id) {
-            reject('Error getPlaylistById options.id is required, but is null');
-        } else {
-            var uri = 'https://api.soundcloud.com/me/playlists/' + options.id + '?format=json&oauth_token=' + options.oauth_token;
-            request(uri, {timeout: 10000}, function (err, response, body) {
-                if (!err) {
-                    console.log('getPlaylistById successful');
-                    try {
-                        var tracks = _.map(JSON.parse(body.toString('utf8')), function (track) {
-                            return track;
-                        });
-                        resolve(tracks);
-                    } catch (e) {
-                        console.log('Error while getPlaylistById track: ' + err);
-                        reject('Error while getPlaylistById track: ' + err);
-                    }
-                } else {
-                    console.log('Error while getPlaylistById track: ' + err);
-                    reject('Error while getPlaylistById track: ' + err);
-                }
-            });
-        }
-    });
-}
-
-
-/**
- * Remove a playlist
- * @param options
- * @returns {*}
- */
-function removePlaylist(options) {
-    return new Promise(function (resolve, reject) {
-
-        if (!options.oauth_token) {
-            reject('Error removePlaylist options.oauth_token is required but is null ');
-        } else if (!options.title) {
-            reject('Error removePlaylist options.title is required and but is null ');
-        } else {
-            var uri = 'https://api.soundcloud.com/playlists/' + options.title + '?oauth_token=' + options.oauth_token + '&format=json';
-            request(uri, {method: 'DELETE', timeout: 10000}, function (err, response) {
-                if (err || !response.body || response.body.indexOf(404) !== -1) {
-                    console.log('Error while removePlaylist track: ' + response.body);
-                    reject('Error while removePlaylist track: ' + response.body);
-                } else {
-                    resolve({result: response.body});
-                }
-            });
-        }
-    });
-}
-
-function getToken(options, callback) {
-    return new Promise(function (resolve, reject) {
-
-        var curl_options = {
-            'url': 'https://api.soundcloud.com/oauth2/token',
-            'method': 'POST',
-            verbose: true,
-            encoding: 'utf8',
-            data: options,
-            timeout: 10000
-        };
-
-        curlrequest.request(curl_options, function (err, data, meta) {
-            if (err || !data) {
-                reject(err);
-            } else {
-                try {
-                    resolve(JSON.parse(data), meta);
-                } catch (e) {
-                    reject(e);
-                }
-            }
-        });
-    });
-}
 
 module.exports = {
     addTrack: addTrack,

@@ -47,12 +47,8 @@ soundcloudnodejs.getToken(options).then(function (token, meta) {
 
                 playlist.oauth_token = token.access_token;
 
-                soundcloudnodejs.removePlaylist(playlist, function (err, response) {
-                    if (err) {
-                        console.log('removePlaylist err: ' + err);
-                    } else {
-                        console.log('removePlaylist done: ' + JSON.stringify(response));
-                    }
+                soundcloudnodejs.removePlaylist(playlist).then(function (response) {
+                    console.log('removePlaylist done: ' + JSON.stringify(response));
                 });
 
             });

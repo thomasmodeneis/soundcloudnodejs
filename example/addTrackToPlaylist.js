@@ -18,7 +18,7 @@ var options = {
     password: process.env.password || credentials.password
 };
 
-soundcloudnodejs.getToken(options).then(function (token, meta) {
+soundcloudnodejs.getToken(options).then(function (token) {
     if (!token || !token.access_token) {
         console.log('getToken err: token.access_token ');
     } else {
@@ -33,7 +33,7 @@ soundcloudnodejs.getToken(options).then(function (token, meta) {
             asset_data: __dirname + '/dog/dog_example.mp3'
         };
 
-        soundcloudnodejs.addTrack(track).then(function (track) {
+        soundcloudnodejs.addTrack(track, function (err, track) {
             var playlist = {
                 //set here the desired playlist title
                 title: 'test_3',
@@ -54,7 +54,7 @@ soundcloudnodejs.getToken(options).then(function (token, meta) {
                     playlist.oauth_token = token.access_token;
                     playlist.track = {id: track.id};
 
-                    soundcloudnodejs.addTrackToPlaylist(playlist).then(function (track) {
+                    soundcloudnodejs.addTrackToPlaylist(playlist, function (err, track) {
                         console.log(track);
 
                     });

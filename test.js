@@ -3,18 +3,12 @@ var assert = require('chai').assert;
 var soundcloudnodejs = require('../soundcloudnodejs');
 var fs = require('fs');
 var _ = require('underscore');
-
 var credentials = require('./example/credentials');
 
-var options = {
-    client_id: process.env.client_id || credentials.client_id,
-    client_secret: process.env.client_secret || credentials.client_secret,
-    grant_type: process.env.grant_type || credentials.grant_type,
-    redirect_uri: process.env.redirect_uri || credentials.redirect_uri,
-    username: process.env.username || credentials.username,
-    password: process.env.password || credentials.password
-};
-
+//refresh this file with a valid token in order to be able to use soundcloud API :D
+//I've set this into a file because soundcloud will allow you to get like 5 tokens per hour if you are lucky
+//this means if you run this test 5 times and dont save the token you are stuck :(
+var token = require("./example/token");
 
 describe('Should Support SoundCloud main operations', function () {
 
@@ -22,31 +16,26 @@ describe('Should Support SoundCloud main operations', function () {
 
         it('should return -1 when the value is not present', function (done) {
             this.timeout(10000);
-            soundcloudnodejs.getToken(options).then(function (token) {
-                assert.isNotNull(token, "Token is null");
-                assert.isNotNull(token.access_token, "Token is null");
 
-                var track = {
-                    title: 'dog_example',
-                    description: 'dog_example',
-                    genre: 'dog_example',
-                    artwork_data: __dirname + '/example/dog/dog.jpeg',
-                    sharing: 'public',
-                    oauth_token: token.access_token,
-                    asset_data: __dirname + '/example/dog/dog_example.mp3'
-                };
-
-                soundcloudnodejs.addTrack(track).then(function (track) {
-                    assert.isNotNull(track, "Track is null");
-                    done();
-                });
-
-            }).error(function (err) {
-                assert.isNull(err, "Error :| ");
+            var track = {
+                title: 'dog_example',
+                description: 'dog_example',
+                genre: 'dog_example',
+                artwork_data: __dirname + '/example/dog/dog.jpeg',
+                sharing: 'public',
+                oauth_token: token.access_token,
+                asset_data: __dirname + '/example/dog/dog_example.mp3'
+            };
+            soundcloudnodejs.addTrack(track, function (err, track) {
+                assert.isNull(err, "Error is not null");
+                assert.isNotNull(track, "Track is null");
+                done();
             });
         });
-
     });
 });
+
+
+///TODO: add more tests for other api calls
 
 
