@@ -61,3 +61,15 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
+
+Disclaimer:
+* Warning: I've done this module, because other modules where not working or not maintained when I started this SoundCloud saga.
+
+* There is few details with the SoundCloud API that you must be aware when using this module:
+
+1) SoundCloud API will only allow you to get few tokens per hour, they do not mention this on their docs, but the facto is that their api will start returning bad no sense errors and no token for you :|
+So when using getToken method, please have this in mind.
+
+2) SoundCloud API won't allow you to delete your playlists without complaining with a 401 and all deletion for tracks will return 401, but all works fine and you can check manually on your soundcloud website.
+    * Note some times it may take several hours for Soundcloud to clean the cache and show you the correct track number or remove your playlists from the website (be aware!)
+So have this in mind when using removePlaylist and removeTrack.
