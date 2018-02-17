@@ -31,6 +31,8 @@ soundcloudnodejs.getToken(options).then(function (token, meta) {
 ```
 
 For usage see folder [soundcloudnodejs/example/](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/example) .
+For test cases and BDD scenarios see folder [soundcloudnodejs/test/](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/test) .
+Make sure to add your credentials to [credentials.js](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/example/credentials.js) and run `npm run token` before running the tests, otherwise tests will fail.
 
 
 # DEBUG
@@ -42,7 +44,7 @@ To enable debug mode, run scripts with env variable SOUNDCLOUDJS_DEBUG=true
 ```
 The MIT License (MIT)
 
-Copyright (c) 2016 Thomas Modeneis
+Copyright (c) 2018 Thomas Modeneis
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -63,13 +65,5 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 Disclaimer:
-* Warning: I've done this module, because other modules where not working or not maintained when I started this SoundCloud saga.
-
-* There is few details with the SoundCloud API that you must be aware when using this module:
-
-1) SoundCloud API will only allow you to get few tokens per hour, they do not mention this on their docs, but the facto is that their api will start returning bad no sense errors and no token for you :|
-So when using getToken method, please have this in mind.
-
-2) SoundCloud API won't allow you to delete your playlists without complaining with a 401 and all deletion for tracks will return 401, but all works fine and you can check manually on your soundcloud website.
-    * Note some times it may take several hours for Soundcloud to clean the cache and show you the correct track number or remove your playlists from the website (be aware!)
-So have this in mind when using removePlaylist and removeTrack.
+* I've done this module because SoundCloud does not offer a NodeJS wrapper for their APIs, other opensource modules where not working or not maintained when I started this SoundCloud saga back in 2016.
+* This module is fully tested and functional, however if something does not work for you please feel free to open a ticket / pull request with a fix or new functionality.

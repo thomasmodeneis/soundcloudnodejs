@@ -32,10 +32,7 @@ soundcloudnodejs.getToken(options).then(function (token) {
             asset_data: __dirname + '/dog/dog_example.mp3'
         };
 
-        soundcloudnodejs.addTrack(track, function (err, track) {
-            if (err) {
-                console.log(err)
-            }
+        soundcloudnodejs.addTrack(track).then(function(track) {
             console.log(track);
         });
     }

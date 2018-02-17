@@ -31,12 +31,7 @@ soundcloudnodejs.getToken(options).then(function (token, meta) {
             asset_data: __dirname + '/dog/dog_example.mp3'
         };
 
-        soundcloudnodejs.addTrack(track, function (err, track) {
-            if(err){
-                console.log(err);
-                return
-            }
-
+        soundcloudnodejs.addTrack(track).then(function (track) {
             var playlist = {
                 oauth_token: token.access_token,
                 title: 'test_' + Math.floor((Math.random() * 10) + 1),
@@ -47,10 +42,7 @@ soundcloudnodejs.getToken(options).then(function (token, meta) {
             /**
              * If playlist does not exist will create new one
              */
-            soundcloudnodejs.addTrackToNewPlaylist(playlist, function (err, track) {
-                if(err){
-                    console.log(err);
-                }
+            soundcloudnodejs.addTrackToNewPlaylist(playlist).then(function (track) {
                 console.log(track);
             });
 

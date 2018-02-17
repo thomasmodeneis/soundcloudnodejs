@@ -33,7 +33,7 @@ soundcloudnodejs.getToken(options).then(function (token) {
             asset_data: __dirname + '/dog/dog_example.mp3'
         };
 
-        soundcloudnodejs.addTrack(track, function (err, track) {
+        soundcloudnodejs.addTrack(track).then(function (track) {
             var playlist = {
                 //set here the desired playlist title
                 title: 'test_3',
@@ -54,7 +54,7 @@ soundcloudnodejs.getToken(options).then(function (token) {
                     playlist.oauth_token = token.access_token;
                     playlist.track = {id: track.id};
 
-                    soundcloudnodejs.addTrackToPlaylist(playlist, function (err, track) {
+                    soundcloudnodejs.addTrackToPlaylist(playlist).then(function (track) {
                         console.log(track);
 
                     });

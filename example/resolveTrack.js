@@ -3,7 +3,6 @@
  */
 'use strict';
 var soundcloudnodejs = require('../soundcloudnodejs');
-var fs = require('fs');
 var credentials = require('./credentials');
 
 var options = {
