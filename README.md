@@ -30,9 +30,9 @@ soundcloudnodejs.getToken(options).then(function (token, meta) {
 
 ```
 
-For usage see folder [soundcloudnodejs/example/](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/example) .
-For test cases and BDD scenarios see folder [soundcloudnodejs/test/](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/test) .
-Make sure to add your credentials to [credentials.js](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/example/credentials.js) and run `npm run token` before running the tests, otherwise tests will fail.
+* For usage see folder [soundcloudnodejs/example/](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/example) .
+* For test cases and BDD scenarios see folder [soundcloudnodejs/test/](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/test) .
+* Make sure to add your credentials to [credentials.js](https://github.com/thomasmodeneis/soundcloudnodejs/tree/master/example/credentials.js) and run `npm run token` before running the tests, otherwise tests will fail.
 
 
 # DEBUG
